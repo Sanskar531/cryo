@@ -1,46 +1,136 @@
-# 🧠 myfs-kmod Kernel Filesystem Ticket List
+# ✅ cryo-kmod: Exotic Kernel Filesystem Ticket List
 
-## Phase 1: Bootstrapping
+---
+
+## 📦 Phase 1: Kernel Module Bootstrapping
+
 - [ ] Set up kernel module build with `Makefile`
-- [ ] Register filesystem type with VFS
-- [ ] Implement `myfs_mount()` using `mount_bdev`
-- [ ] Implement `myfs_fill_super()` to load superblock
-- [ ] Define and assign `super_operations`
+- [ ] Register filesystem with VFS (`file_system_type`)
+- [ ] Implement `myfs_mount()` using `mount_bdev()`
+- [ ] Implement `myfs_fill_super()` to load the superblock
+- [ ] Define `super_operations`, `inode_operations`, `file_operations`
+- [ ] Implement dummy root inode + dentry
 
-## Phase 2: Disk Access
-- [ ] Use `sb_bread()` to read blocks
-- [ ] Add block allocator using a free block bitmap
-- [ ] Create simple on-disk `superblock` and `inode` structs
-- [ ] Add helper functions for reading/writing inodes
+---
 
-## Phase 3: Inodes & Dentries
-- [ ] Implement `myfs_iget()` to load inode from disk
-- [ ] Assign `inode_operations` (e.g. lookup, create)
-- [ ] Create simple `dentry` → `inode` path resolution
+## 🧱 Phase 2: Disk I/O Layer
 
-## Phase 4: File Operations
-- [ ] Define `file_operations` with `read`, `write`
-- [ ] Use `generic_file_read_iter`, `generic_file_write_iter`
-- [ ] Implement `myfs_get_block()` for buffer_head mapping
+- [ ] Implement block read/write abstraction with `sb_bread()` and `sb_getblk()`
+- [ ] Support block sizes: 4K and 64K (runtime tunable)
+- [ ] Implement block bitmap allocator (alloc, free)
+- [ ] Create `fs_structs.h` with `superblock_t`, `inode_t`, `dir_entry_t`
 
-## Phase 5: Directory Support
-- [ ] Implement directory format using fixed-size entries
-- [ ] Support `readdir`, `mkdir`, `rmdir`, `unlink`
-- [ ] Add hashing for faster directory lookups
+---
 
-## Phase 6: Allocation
-- [ ] Implement `alloc_inode()`, `free_inode()`
-- [ ] Implement `alloc_block()`, `free_block()`
-- [ ] Add journaling placeholder for future WAL
+## 📂 Phase 3: Inode Management
 
-## Phase 7: Debugging & Testing
-- [ ] Add `mkmyfs` userspace tool to format image or device
-- [ ] Add `fsck` tool to check on-disk structures
-- [ ] Use `dmesg` and `printk()` for trace-level logging
-- [ ] Test with `mount -t myfs /dev/loop10 /mnt/myfs`
+- [ ] Implement inode allocator and free list
+- [ ] Add `myfs_iget()` to load inode from disk
+- [ ] Implement inode flags, sizes, timestamps, UID/GID
+- [ ] Add support for symbolic links and sockets
+- [ ] Track per-inode journaling mode (full/meta/none)
 
-## Phase 8: Advanced Features
-- [ ] Add extent-based allocation
-- [ ] Add inline small file support in inodes
-- [ ] Add journaling layer
-- [ ] Add support for sparse files and indirect blocks
+---
+
+## 📁 Phase 4: Directory System
+
+- [ ] Implement fixed-size dir entry format
+- [ ] Add `lookup()`, `create()`, `mkdir()`, `rmdir()`, `unlink()`
+- [ ] Add parent directory backlink (cycle detection)
+- [ ] Hash-based directory indexing (HTree-style)
+- [ ] Add Bloom filter for directory lookups
+
+---
+
+## 📄 Phase 5: File Data I/O
+
+- [ ] Implement `read_iter`, `write_iter` using buffer_heads
+- [ ] Add indirect block support for large files
+- [ ] Support extent-based allocation for contiguous files
+- [ ] Add inline small file support (store in inode if small)
+- [ ] Add truncate, seek, and partial read/write support
+- [ ] Add compression support (zstd/lz4, per-block)
+- [ ] Add sparse file support with hole punching
+
+---
+
+## 🧾 Phase 6: Journaling & Transaction System
+
+- [ ] Design journal entry format (WAL-style)
+- [ ] Implement `start_tx()`, `log_op()`, `commit_tx()`
+- [ ] Add journal replay on mount
+- [ ] Add per-inode journaling level flag
+- [ ] Implement journal ring buffer variant (low write amp)
+
+---
+
+## ⚙️ Phase 7: Advanced Block Layout & Metadata
+
+- [ ] Add hybrid extents + indirect pointer format
+- [ ] Implement self-healing allocator: track extents with red-black tree
+- [ ] Implement block-type tagging (inode/data/journal/etc.)
+- [ ] Implement persistent slab allocator for metadata regions
+- [ ] Add Merkle tree generation per file
+- [ ] Add per-block checksums and integrity verification
+
+---
+
+## 🧪 Phase 8: Caching, Metrics, and Background Tasks
+
+- [ ] Implement adaptive LRU-K block cache
+- [ ] Add read-ahead for sequential file reads
+- [ ] Add write-behind buffering with delayed allocation
+- [ ] Add live metrics exposed via `/proc/myfs/stats`
+- [ ] Add block reuse tracking and mount-time analytics
+- [ ] Add background defragmentation daemon
+
+---
+
+## 🔁 Phase 9: Copy-on-Write + Snapshot Features
+
+- [ ] Implement block-level reference counting
+- [ ] Add snapshot table and snapshot creation system call
+- [ ] Copy-on-write updates for snapshot-tracked blocks
+- [ ] Time-travel recovery for files from snapshot diffs
+
+---
+
+## 🌀 Phase 10: Deduplication, Quotas, Encryption
+
+- [ ] Add transparent deduplication (SHA-256 per-block)
+- [ ] Maintain block hash table with reference count
+- [ ] Add per-user UID/GID quota support
+- [ ] Implement basic block-level encryption (XOR or ChaCha20)
+- [ ] Encrypt inode metadata per user
+
+---
+
+## 🧩 Phase 11: Experimental Features
+
+- [ ] Pluggable metadata backend (B+Tree, LSM-tree, HashMap)
+- [ ] Preallocated file templates for fast log file creation
+- [ ] Custom inode layout schema per user-defined type
+- [ ] Journaling configuration override per directory
+- [ ] Tiered storage simulation: hot/cold file movement
+
+---
+
+## 🧰 Phase 12: Tools, Testing, and Utilities
+
+- [ ] Write `mkmyfs` formatting tool to build superblock and root inode
+- [ ] Write `fsck.myfs` to verify and repair structures
+- [ ] Add file fuzzing test tool (`fs_fuzz`) for lookup/corruption testing
+- [ ] Add test harness that mounts/unmounts and verifies block state
+- [ ] Add benchmarking tool: `fsbench` (files/sec, ops/sec, write amp)
+
+---
+
+## 🧪 Bonus Features for Bragging Rights
+
+- [ ] Time-travel file recovery
+- [ ] Filesystem scrubbing daemon
+- [ ] Filesystem visualizer (graph block allocation)
+- [ ] Built-in telemetry + debugging shell
+- [ ] Filesystem event tracing + journaling log viewer
+- [ ] Crash simulation/recovery tester with snapshot rewind
+
